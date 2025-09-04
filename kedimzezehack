@@ -16,7 +16,6 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Camera = game:GetService("Workspace").CurrentCamera
 
-
 local FlySpeed = 50
 local WalkSpeed = 50
 local IsFlying = false
@@ -25,7 +24,13 @@ local InfiniteJumpEnabled = false
 local ESPEnabled = false
 local SpinEnabled = false
 local SpinSpeed = 5
+local NoClipEnabled = false
+local FreecamEnabled = false
+local FreecamSpeed = 2
+local FreecamConn
+local FreecamCF = CFrame.new()
 
+-- FLY
 local function StartFlying()
     if not IsFlying then
         IsFlying = true
@@ -34,7 +39,6 @@ local function StartFlying()
         local HRP = Character:FindFirstChild("HumanoidRootPart")
         if not HRP then return end
 
-       
         local Attachment = Instance.new("Attachment", HRP)
 
         local LV = Instance.new("LinearVelocity")
@@ -55,30 +59,15 @@ local function StartFlying()
             local camCF = Camera.CFrame
             local move = Vector3.zero
 
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-                move += camCF.LookVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-                move -= camCF.LookVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-                move -= camCF.RightVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-                move += camCF.RightVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-                move += Vector3.yAxis
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
-                move -= Vector3.yAxis
-            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then move += camCF.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then move -= camCF.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then move -= camCF.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then move += camCF.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move += Vector3.yAxis end
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then move -= Vector3.yAxis end
 
-            if move.Magnitude > 0 then
-                move = move.Unit * FlySpeed
-            end
+            if move.Magnitude > 0 then move = move.Unit * FlySpeed end
 
-           
             LV.VectorVelocity = LV.VectorVelocity:Lerp(move, 0.2)
             AO.CFrame = CFrame.lookAt(HRP.Position, HRP.Position + camCF.LookVector, Vector3.yAxis)
         end)
@@ -100,7 +89,7 @@ local function StopFlying()
     end
 end
 
--- Speed
+-- SPEED
 local function SetSpeed(speed)
     local Character = Player.Character
     if Character then
@@ -111,7 +100,7 @@ local function SetSpeed(speed)
     end
 end
 
-
+-- INFINITE JUMP
 UserInputService.JumpRequest:Connect(function()
     if InfiniteJumpEnabled then
         local Character = Player.Character
@@ -124,7 +113,7 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
-
+-- ESP
 local function AddESP(player)
     if player ~= Player and player.Character then
         local highlight = Instance.new("Highlight")
@@ -142,13 +131,9 @@ local function ToggleESP(enabled)
     for _, player in pairs(game.Players:GetPlayers()) do
         if player ~= Player and player.Character then
             for _, obj in pairs(player.Character:GetChildren()) do
-                if obj:IsA("Highlight") then
-                    obj:Destroy()
-                end
+                if obj:IsA("Highlight") then obj:Destroy() end
             end
-            if ESPEnabled then
-                AddESP(player)
-            end
+            if ESPEnabled then AddESP(player) end
         end
     end
 end
@@ -161,7 +146,7 @@ game.Players.PlayerAdded:Connect(function(player)
     end
 end)
 
-
+-- SPIN
 RunService.RenderStepped:Connect(function()
     if SpinEnabled and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
         Player.Character.HumanoidRootPart.CFrame =
@@ -169,87 +154,57 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-
-local MainTab = Window:CreateTab("Kontroller", 4483362458)
-
-MainTab:CreateToggle({
-    Name = "Uçuş",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            StartFlying()
-        else
-            StopFlying()
+-- NOCLIP
+RunService.Stepped:Connect(function()
+    if NoClipEnabled and Player.Character then
+        for _, part in pairs(Player.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide then
+                part.CanCollide = false
+            end
         end
     end
-})
-
-MainTab:CreateToggle({
-    Name = "Sınırsız Zıplama",
-    CurrentValue = false,
-    Callback = function(Value)
-        InfiniteJumpEnabled = Value
-    end
-})
-
-MainTab:CreateToggle({
-    Name = "ESP (Duvar Arkası)",
-    CurrentValue = false,
-    Callback = function(Value)
-        ToggleESP(Value)
-    end
-})
-
-MainTab:CreateToggle({
-    Name = "Spin (Dönme)",
-    CurrentValue = false,
-    Callback = function(Value)
-        SpinEnabled = Value
-    end
-})
-
-MainTab:CreateSlider({
-    Name = "Yürüme Hızı",
-    Range = {16, 100},
-    Increment = 1,
-    CurrentValue = 50,
-    Callback = function(Value)
-        WalkSpeed = Value
-        SetSpeed(WalkSpeed)
-    end
-})
-
-MainTab:CreateSlider({
-    Name = "Uçuş Hızı",
-    Range = {10, 150},
-    Increment = 1,
-    CurrentValue = 50,
-    Callback = function(Value)
-        FlySpeed = Value
-    end
-})
-
-MainTab:CreateSlider({
-    Name = "Spin Hızı",
-    Range = {1, 50},
-    Increment = 1,
-    CurrentValue = 5,
-    Callback = function(Value)
-        SpinSpeed = Value
-    end
-})
-
-
-if Player.Character then
-    SetSpeed(WalkSpeed)
-end
-Player.CharacterAdded:Connect(function()
-    SetSpeed(WalkSpeed)
 end)
 
-Rayfield:Notify({
-    Title = "Script Loaded",
-    Content = "ALL HACKS WORKİNG",
-    Duration = 5,
-    Image = 4483362458
-})
+-- FREECAM
+local function StartFreecam()
+    if FreecamEnabled then return end
+    FreecamEnabled = true
+    FreecamCF = Camera.CFrame
+    FreecamConn = RunService.RenderStepped:Connect(function()
+        local move = Vector3.zero
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then move += Camera.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then move -= Camera.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then move -= Camera.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then move += Camera.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then move += Vector3.yAxis end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then move -= Vector3.yAxis end
+
+        FreecamCF = FreecamCF + move * FreecamSpeed
+        Camera.CFrame = FreecamCF
+    end)
+end
+
+local function StopFreecam()
+    if FreecamEnabled then
+        FreecamEnabled = false
+        if FreecamConn then FreecamConn:Disconnect() FreecamConn = nil end
+    end
+end
+
+-- GUI
+local MainTab = Window:CreateTab("Kontroller", 4483362458)
+
+MainTab:CreateToggle({Name = "Uçuş", CurrentValue = false, Callback = function(v) if v then StartFlying() else StopFlying() end end})
+MainTab:CreateToggle({Name = "Sınırsız Zıplama", CurrentValue = false, Callback = function(v) InfiniteJumpEnabled = v end})
+MainTab:CreateToggle({Name = "ESP (Duvar Arkası)", CurrentValue = false, Callback = function(v) ToggleESP(v) end})
+MainTab:CreateToggle({Name = "Spin (Dönme)", CurrentValue = false, Callback = function(v) SpinEnabled = v end})
+MainTab:CreateToggle({Name = "NoClip", CurrentValue = false, Callback = function(v) NoClipEnabled = v end})
+MainTab:CreateToggle({Name = "Freecam", CurrentValue = false, Callback = function(v) if v then StartFreecam() else StopFreecam() end end})
+
+MainTab:CreateSlider({Name = "Yürüme Hızı", Range = {16, 100}, Increment = 1, CurrentValue = 50, Callback = function(v) WalkSpeed = v SetSpeed(WalkSpeed) end})
+MainTab:CreateSlider({Name = "Uçuş Hızı", Range = {10, 150}, Increment = 1, CurrentValue = 50, Callback = function(v) FlySpeed = v end})
+MainTab:CreateSlider({Name = "Spin Hızı", Range = {1, 50}, Increment = 1, CurrentValue = 5, Callback = function(v) SpinSpeed = v end})
+MainTab:CreateSlider({Name = "Freecam Hızı", Range = {1, 20}, Increment = 1, CurrentValue = 2, Callback = function(v) FreecamSpeed = v end})
+
+if Player.Character then SetSpeed(WalkSpeed) end
+Player.CharacterAdded:Connect(function() SetSpeed(WalkSpeed) end)
