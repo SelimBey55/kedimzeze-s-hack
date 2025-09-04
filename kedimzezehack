@@ -201,9 +201,9 @@ MainTab:CreateToggle({Name = "Spin (Dönme)", CurrentValue = false, Callback = f
 MainTab:CreateToggle({Name = "NoClip", CurrentValue = false, Callback = function(v) NoClipEnabled = v end})
 MainTab:CreateToggle({Name = "Freecam", CurrentValue = false, Callback = function(v) if v then StartFreecam() else StopFreecam() end end})
 
-MainTab:CreateSlider({Name = "Yürüme Hızı", Range = {16, 500}, Increment = 1, CurrentValue = 50, Callback = function(v) WalkSpeed = v SetSpeed(WalkSpeed) end})
+MainTab:CreateSlider({Name = "Yürüme Hızı", Range = {16, 200}, Increment = 1, CurrentValue = 50, Callback = function(v) WalkSpeed = v SetSpeed(WalkSpeed) end})
 MainTab:CreateSlider({Name = "Uçuş Hızı", Range = {10, 150}, Increment = 1, CurrentValue = 50, Callback = function(v) FlySpeed = v end})
-MainTab:CreateSlider({Name = "Spin Hızı", Range = {1, 500}, Increment = 1, CurrentValue = 5, Callback = function(v) SpinSpeed = v end})
+MainTab:CreateSlider({Name = "Spin Hızı", Range = {1, 100}, Increment = 1, CurrentValue = 5, Callback = function(v) SpinSpeed = v end})
 MainTab:CreateSlider({Name = "Freecam Hızı", Range = {1, 20}, Increment = 1, CurrentValue = 2, Callback = function(v) FreecamSpeed = v end})
 
 if Player.Character then SetSpeed(WalkSpeed) end
