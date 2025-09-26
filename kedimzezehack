@@ -80,7 +80,7 @@ local function StopFlying()
         if FlyConnection then FlyConnection:Disconnect() FlyConnection = nil end
         local HRP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
         if HRP then
-            for _,v in ipairs(HRP:GetChildren()) do
+            for _, v in ipairs(HRP:GetChildren()) do
                 if v:IsA("LinearVelocity") or v:IsA("AlignOrientation") or v:IsA("Attachment") then
                     v:Destroy()
                 end
@@ -91,6 +91,7 @@ end
 
 -- SPEED
 local function SetSpeed(speed)
+    WalkSpeed = speed
     local Character = Player.Character
     if Character then
         local Humanoid = Character:FindFirstChild("Humanoid")
@@ -99,6 +100,17 @@ local function SetSpeed(speed)
         end
     end
 end
+
+-- Continuously enforce WalkSpeed
+RunService.Heartbeat:Connect(function()
+    local Character = Player.Character
+    if Character then
+        local Humanoid = Character:FindFirstChild("Humanoid")
+        if Humanoid and Humanoid.WalkSpeed ~= WalkSpeed then
+            Humanoid.WalkSpeed = WalkSpeed
+        end
+    end
+end)
 
 -- INFINITE JUMP
 UserInputService.JumpRequest:Connect(function()
@@ -201,7 +213,7 @@ MainTab:CreateToggle({Name = "Spin (Dönme)", CurrentValue = false, Callback = f
 MainTab:CreateToggle({Name = "NoClip", CurrentValue = false, Callback = function(v) NoClipEnabled = v end})
 MainTab:CreateToggle({Name = "Freecam", CurrentValue = false, Callback = function(v) if v then StartFreecam() else StopFreecam() end end})
 
-MainTab:CreateSlider({Name = "Yürüme Hızı", Range = {16, 200}, Increment = 1, CurrentValue = 50, Callback = function(v) WalkSpeed = v SetSpeed(WalkSpeed) end})
+MainTab:CreateSlider({Name = "Yürüme Hızı", Range = {16, 200}, Increment = 1, CurrentValue = 50, Callback = function(v) SetSpeed(v) end})
 MainTab:CreateSlider({Name = "Uçuş Hızı", Range = {10, 150}, Increment = 1, CurrentValue = 50, Callback = function(v) FlySpeed = v end})
 MainTab:CreateSlider({Name = "Spin Hızı", Range = {1, 100}, Increment = 1, CurrentValue = 5, Callback = function(v) SpinSpeed = v end})
 MainTab:CreateSlider({Name = "Freecam Hızı", Range = {1, 20}, Increment = 1, CurrentValue = 2, Callback = function(v) FreecamSpeed = v end})
